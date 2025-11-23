@@ -1,7 +1,15 @@
 github_org: "TestingJDA"
 min_runners: 2
+
+# Imagen base pública para construir el runner efímero
 docker_runner_image: "ghcr.io/actions/runner:latest"
+
+# Nombre de la imagen local generada por Ansible
 runner_image_name: "github-ephemeral-runner:latest"
+
+# Variable usada directamente en las plantillas de systemd
+runner_image: "{{ runner_image_name }}"
+
 github_token: "{{ vault_github_token }}"
 github_user: "josedanielacevedovass"
 vault_github_token: "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"

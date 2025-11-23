@@ -21,12 +21,12 @@
     dest: /opt/runner/Dockerfile
     mode: '0644'
 
-- name: Login en GHCR para permitir docker pull de actions/runner
-  command: >
-    docker login ghcr.io
-    -u {{ github_user }}
-    --password {{ vault_github_token }}
-  no_log: true
+# - name: Login en GHCR para permitir docker pull de actions/runner
+#   command: >
+#     docker login ghcr.io
+#     -u {{ github_user }}
+#     --password {{ vault_github_token }}
+#   no_log: true
   
 - name: Construir imagen Docker del runner efímero
   command: docker build -t {{ runner_image_name }} .
