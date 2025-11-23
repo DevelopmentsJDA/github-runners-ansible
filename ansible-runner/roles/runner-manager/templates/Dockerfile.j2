@@ -1,8 +1,5 @@
-FROM {{ docker_runner_image }}
-
-RUN apt-get update && apt-get install -y jq curl unzip git && rm -rf /var/lib/apt/lists/*
+FROM ghcr.io/actions/actions-runner:latest
 
 COPY start-runner.sh /start-runner.sh
-RUN chmod +x /start-runner.sh
 
 ENTRYPOINT ["/start-runner.sh"]

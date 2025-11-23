@@ -1,24 +1,21 @@
 [Unit]
-Description=Runner manager (autoscaler) para runners efímeros de GitHub (org: {{ github_org }})
+Description=Runner manager (autoscaler) para runners efímeros de GitHub (org: TestingJDA)
 After=docker.service
 Requires=docker.service
 
 [Service]
 Type=simple
 Restart=always
-RestartSec=5s
+RestartSec=5
 
-# Pasamos variables de entorno necesarias al script
-Environment="GITHUB_ORG={{ github_org }}"
-Environment="GITHUB_TOKEN={{ github_token }}"
-Environment="RUNNER_IMAGE={{ runner_image_name }}"
-Environment="MIN_RUNNERS={{ min_runners }}"
+Environment="GITHUB_ORG=TestingJDA"
+Environment="GITHUB_TOKEN=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"
+Environment="RUNNER_IMAGE=github-ephemeral-runner:latest"
+Environment="MIN_RUNNERS=2"
 
 ExecStart=/bin/bash -c '
   while true; do
-    # contamos contenedores running creados a partir de la imagen de runner
     RUNNING=$(docker ps --filter "ancestor=${RUNNER_IMAGE}" -q | wc -l)
-    # quitamos padding
     RUNNING=$(echo $RUNNING | tr -d "[:space:]")
     if [ -z "${RUNNING}" ]; then RUNNING=0; fi
 
@@ -34,6 +31,11 @@ ExecStart=/bin/bash -c '
 
     sleep 5
   done
+'
+
+ExecStop=/bin/bash -c '
+  echo "Runner-manager detenido"
+  docker ps --filter "ancestor=${RUNNER_IMAGE}" -q | xargs -r docker stop
 '
 
 [Install]
