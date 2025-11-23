@@ -1,0 +1,6 @@
+github_org: "TestingJDA"
+min_runners: 2
+docker_runner_image: "ghcr.io/actions/runner:latest"
+runner_image_name: "github-ephemeral-runner:latest"
+github_token: "{{ vault_github_token }}"
+github_user: "josedanielacevedovass"

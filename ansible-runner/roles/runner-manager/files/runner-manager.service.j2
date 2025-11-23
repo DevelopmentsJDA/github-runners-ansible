@@ -1,0 +1,40 @@
+[Unit]
+Description=Runner manager (autoscaler) para runners efímeros de GitHub (org: {{ github_org }})
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+
+# Pasamos variables de entorno necesarias al script
+Environment="GITHUB_ORG={{ github_org }}"
+Environment="GITHUB_TOKEN={{ github_token }}"
+Environment="RUNNER_IMAGE={{ runner_image_name }}"
+Environment="MIN_RUNNERS={{ min_runners }}"
+
+ExecStart=/bin/bash -c '
+  while true; do
+    # contamos contenedores running creados a partir de la imagen de runner
+    RUNNING=$(docker ps --filter "ancestor=${RUNNER_IMAGE}" -q | wc -l)
+    # quitamos padding
+    RUNNING=$(echo $RUNNING | tr -d "[:space:]")
+    if [ -z "${RUNNING}" ]; then RUNNING=0; fi
+
+    if [ "${RUNNING}" -lt "${MIN_RUNNERS}" ]; then
+      echo "[$(date)] Lanzando nuevo runner (actual ${RUNNING} < min ${MIN_RUNNERS})"
+      docker run -d \
+        --name runner_$(date +%s) \
+        -e GITHUB_ORG=${GITHUB_ORG} \
+        -e GITHUB_TOKEN=${GITHUB_TOKEN} \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        ${RUNNER_IMAGE}
+    fi
+
+    sleep 5
+  done
+'
+
+[Install]
+WantedBy=multi-user.target

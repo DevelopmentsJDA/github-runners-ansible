@@ -1,0 +1,7 @@
+---
+- hosts: runners
+  become: yes
+
+  roles:
+    - docker
+    - runner-manager

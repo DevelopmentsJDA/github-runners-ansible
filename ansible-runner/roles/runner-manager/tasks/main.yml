@@ -1,0 +1,49 @@
+---
+# roles/runner-manager/tasks/main.yml
+
+- name: Crear directorio /opt/runner
+  file:
+    path: /opt/runner
+    state: directory
+    owner: "{{ ansible_user | default('root') }}"
+    mode: '0755'
+
+- name: Copiar script start-runner.sh
+  copy:
+    src: files/start-runner.sh
+    dest: /opt/runner/start-runner.sh
+    mode: '0755'
+    owner: "{{ ansible_user | default('root') }}"
+
+- name: Plantilla Dockerfile (runner)
+  template:
+    src: templates/Dockerfile.j2
+    dest: /opt/runner/Dockerfile
+    mode: '0644'
+
+- name: Login en GHCR para permitir docker pull de actions/runner
+  command: >
+    docker login ghcr.io
+    -u {{ github_user }}
+    --password {{ vault_github_token }}
+  no_log: true
+  
+- name: Construir imagen Docker del runner efímero
+  command: docker build -t {{ runner_image_name }} .
+  args:
+    chdir: /opt/runner
+
+- name: Copiar servicio systemd del manager (plantilla)
+  template:
+    src: files/runner-manager.service.j2
+    dest: /etc/systemd/system/runner-manager.service
+    mode: '0644'
+
+- name: Recargar systemd
+  command: systemctl daemon-reload
+
+- name: Habilitar y arrancar el servicio runner-manager
+  systemd:
+    name: runner-manager
+    enabled: yes
+    state: started
